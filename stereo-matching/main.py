@@ -43,9 +43,10 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
+
 parser.add_argument('--logfile', type=str, default='/home/changty/github_sm_ehvt/psmnet_ehvt/save_ckpt/log-psm-ehvt.txt',
                     help='the domain generalization evaluation results on four realistic datasets')
-parser.add_argument('--res18', type=str, default='/home/changty/github_sm_ehvt/psmnet_ehvt/resnet18-5c106cde.pth',
+parser.add_argument('--res18', type=str, default="/home/changty/test_data/resnet18-5c106cde.pth",
                     help='the pretrained model of resnet18')
 
 ##############################Ours EIL###############################
@@ -87,6 +88,9 @@ parser.add_argument('--num_patch_column', type=int, default=4,
                     help='the number of columns in local transformation M'' ')
 
 args = parser.parse_args()
+
+# os.environ['CUDA_DEVICE_ORDER'] = "PCI_BUS_ID"
+# os.environ['CUDA_VISIBLE_DEVICES'] = '4,6'
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -173,7 +177,7 @@ def adjust_learning_rate(epoch):
         for param_group in optimizer_ei.param_groups:
             param_group['lr'] = param_group['lr'] * 0.5
 
-def generate_loss_envs_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, env_id):
+def generate_envs_loss_disp_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, env_id):
     outputs_list, loss_hvt = model(imgL, imgR, imgL_org, imgR_org, batch_idx, epoch, training=True, is_envs_model=True, env_id=env_id, envs_num=args.envs_num)
 
     b = mask.shape[0]
@@ -195,7 +199,7 @@ def generate_loss_envs_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batc
 
     return loss_disp_sum_list, loss_hvt, outputs_list
 
-def generate_loss_envs_penalty_hvt(outputs_list, outputs_list_envs, mask):
+def generate_eil_loss_envs_penalty(outputs_list, outputs_list_envs, mask):
     b = mask.shape[0]
     loss_disp_penalty_list = []
 
@@ -220,7 +224,7 @@ def generate_loss_envs_penalty_hvt(outputs_list, outputs_list_envs, mask):
 
     return e_penalty
 
-def get_disp_sum_list_hvt(mask, imgL, outputs_list, disp_true):
+def get_sum_disp_loss(mask, imgL, outputs_list, disp_true):
     b = mask.shape[0]
     loss_disp_list = []
     for i in range(b):
@@ -240,13 +244,13 @@ def get_disp_sum_list_hvt(mask, imgL, outputs_list, disp_true):
 
     return loss_disp_sum_list
 
-def generate_loss_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, env_id):
+def generate_global_loss_disp_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, env_id):
     outputs_list, outputs_list_envs, loss_hvt = model(imgL, imgR, imgL_org, imgR_org, batch_idx, epoch, training=True, is_envs_model=False, env_id=env_id, envs_num=args.envs_num)
-    loss_disp_sum_list = get_disp_sum_list_hvt(mask, imgL, outputs_list, disp_true)
-    loss_disp_sum_list_envs = get_disp_sum_list_hvt(mask, imgL, outputs_list_envs, disp_true)
+    loss_disp_sum_list = get_sum_disp_loss(mask, imgL, outputs_list, disp_true)
+    loss_disp_sum_list_envs = get_sum_disp_loss(mask, imgL, outputs_list_envs, disp_true)
     return loss_disp_sum_list, loss_disp_sum_list_envs, loss_hvt, outputs_list, outputs_list_envs
 
-def train_invrat_ec_envs_hvt(imgL, imgR, disp_L, imgL_org, imgR_org, batch_idx, epoch, envs_id):
+def train_envs_specific_model(imgL, imgR, disp_L, imgL_org, imgR_org, batch_idx, epoch, envs_id):
     model.train()
     if args.cuda:
         imgL, imgR, disp_true, imgL_org, imgR_org = imgL.cuda(), imgR.cuda(), disp_L.cuda(), imgL_org.cuda(), imgR_org.cuda()
@@ -254,12 +258,8 @@ def train_invrat_ec_envs_hvt(imgL, imgR, disp_L, imgL_org, imgR_org, batch_idx, 
     mask = disp_true < args.maxdisp
     mask.detach_
 
-    loss_disp_envs, loss_hvt_envs, outputs_list = generate_loss_envs_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, envs_id)
+    loss_disp_envs, loss_hvt_envs, outputs_list = generate_envs_loss_disp_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, envs_id)
     loss_envs = torch.mean(loss_disp_envs) + loss_hvt_envs.sum() / loss_hvt_envs.shape[0]
-
-    # optimizer_feat_env.zero_grad()
-    # loss_envs.backward()
-    # optimizer_feat_env.step()
 
     optimizer.zero_grad()
     loss_envs.backward()
@@ -267,7 +267,7 @@ def train_invrat_ec_envs_hvt(imgL, imgR, disp_L, imgL_org, imgR_org, batch_idx, 
 
     return loss_envs.data
 
-def train(imgL, imgR, disp_L, imgL_org, imgR_org, batch_idx, epoch, envs_id):
+def train_global_model(imgL, imgR, disp_L, imgL_org, imgR_org, batch_idx, epoch, envs_id):
         model.train()
         if args.cuda:
             imgL, imgR, disp_true, imgL_org, imgR_org = imgL.cuda(), imgR.cuda(), disp_L.cuda(), imgL_org.cuda(), imgR_org.cuda()
@@ -277,19 +277,10 @@ def train(imgL, imgR, disp_L, imgL_org, imgR_org, batch_idx, epoch, envs_id):
         optimizer.zero_grad()
         
         if args.model == 'stackhourglass':
-            loss_disp, loss_disp_envs, loss_hvt, outputs_list_hvt, outputs_list_envs_hvt = generate_loss_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, envs_id)
-            
-            if epoch < -1:
-                e_penalty = 0
-            else:
-                e_penalty = generate_loss_envs_penalty_hvt(outputs_list_hvt, outputs_list_envs_hvt, mask) / len(outputs_list_hvt) * args.tau
+            loss_disp, loss_disp_envs, loss_hvt, outputs_list_hvt, outputs_list_envs_hvt = generate_global_loss_disp_hvt(imgL, imgR, imgL_org, imgR_org, disp_true, mask, batch_idx, epoch, envs_id)
+            e_penalty = generate_eil_loss_envs_penalty(outputs_list_hvt, outputs_list_envs_hvt, mask) / len(outputs_list_hvt) * args.tau
 
             loss = torch.mean(loss_disp) + e_penalty + loss_hvt.sum() / loss_hvt.shape[0]
-            # if torch.isnan(loss).sum() > 0:
-            #     loss = nn.Parameter(torch.tensor(3.,device=imgL.device))
-            #     print('----we meet loss nan----')
-            # else:
-            #     loss = loss
 
         elif args.model == 'basic':
             output = model(imgL,imgR)
@@ -316,11 +307,11 @@ def main():
         ## invarient learning - training ##
         for batch_idx, (imgL_crop, imgR_crop, disp_crop_L, imgL_org, imgR_org, envs_id) in enumerate(TrainImgLoader_env):
             start_time = time.time()
-            loss = train_invrat_ec_envs_hvt(imgL_crop,imgR_crop, disp_crop_L, imgL_org, imgR_org, batch_idx, epoch, envs_id)
+            loss = train_envs_specific_model(imgL_crop,imgR_crop, disp_crop_L, imgL_org, imgR_org, batch_idx, epoch, envs_id)
             print('Environment Specific Model Trainging: Iter %d training loss = %.3f, time = %.2f' %(batch_idx, loss, time.time() - start_time))
             
             start_time = time.time()
-            loss, e_penalty = train(imgL_crop,imgR_crop, disp_crop_L, imgL_org, imgR_org, batch_idx, epoch, envs_id)
+            loss, e_penalty = train_global_model(imgL_crop,imgR_crop, disp_crop_L, imgL_org, imgR_org, batch_idx, epoch, envs_id)
             print('Global Model Trainging: Iter %d training loss = %.3f , e_penalty = %.3f,  time = %.2f' %(batch_idx, loss, e_penalty, time.time() - start_time))
             total_train_loss += loss
         print('epoch %d total training loss = %.3f' %(epoch, total_train_loss/len(TrainImgLoader_env)))
