@@ -1,6 +1,4 @@
-### Domain Generalized Stereo Matching via Hierarchical Visual Transformation (CVPR 2023)
-
-<img src="figures/figure.png" width="80%" height="60%">
+### EHVT on Domain Generalized Stereo Matching 
 
 #### Dependencies:
 - Python 3.9
@@ -17,6 +15,10 @@
 - [Middlebury v3](https://vision.middlebury.edu/stereo/submit3/)
 - [ETH3D](https://www.eth3d.net/datasets#low-res-two-view)
 
+#### Environment Inference and Environment Invariant Learning
+The code of Environment Inference is mainly in file EIL.py. The environment inference in EIL is conducted every 5 epochs to acquire the environment label for each training sample.
+The Environment Invariant Learning is integrated into the training process of the EHVT network.
+
 #### Training:
 ```bash
 python main.py --data_path (your SceneFlow data folder) --savemodel (the path of the saved models) --logfile (the path of the log file) --res18 (the path of the Pretrained ResNet18 Model)
@@ -32,26 +34,15 @@ If you want to evaluate the specific model on a certain realistic dataset:
 python submission.py --loadmodel (your testing model) --test_name (the name of testing dataset) --logfile (the path of the log file) 
 ```
 
-#### Pretrained Models:
-[Google Drive](https://drive.google.com/drive/folders/1Wnf2wpppXrZPguwLTQgEhxgjBAfENGHN?usp=drive_link)
-
 #### Pretrained ResNet18 Model:
 [Google Drive](https://drive.google.com/drive/folders/14puLJ5ccffh8Bc1P2hhPoK73gSC1TImf?usp=sharing)
 
-## Citation
+### Acknowledgements
 
-If you find our work useful in your research, please consider citing our paper:
+This project is based on the following open-source projects. We thank their
+authors for making the source code publically available.
 
-```bibtex
-@inproceedings{chang2023domain,
-  title={Domain Generalized Stereo Matching via Hierarchical Visual Transformation},
-  author={Chang, Tianyu and Yang, Xun and Zhang, Tianzhu and Wang, Meng},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  pages={9559--9568},
-  year={2023}
-}
-```
+* [PSMNet](https://github.com/JiaRenChang/PSMNet)
+* [IRMBed](https://github.com/IRMBed/IRMBed)
 
-# Acknowledgements
 
-This project is built upon [PSMNet](https://github.com/JiaRenChang/PSMNet), we thank the original authors for their excellent work.
