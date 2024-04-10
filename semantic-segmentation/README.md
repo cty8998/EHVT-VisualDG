@@ -2,7 +2,7 @@
 
 This is the implementation of EHVT on domain generalized semantic segmentation. 
 
-### Setup Environment
+### Dependencies:
 We use python 3.8.18, and pytorch 1.12.0 with cuda 11.3. 
 ```shell
 conda create -n ehvt-seg python=3.8
@@ -17,7 +17,7 @@ pip install kmeans1d
 imageio_download_bin freeimage
 ```
 
-### Data Preparation
+### Datasets:
 We trained our model with the source domain [GTAV](https://download.visinf.tu-darmstadt.de/data/from_games/). Then we evaluated the model on [Cityscapes](https://www.cityscapes-dataset.com/), [BDD-100K](https://bdd-data.berkeley.edu/), and [Mapillary Vistas](https://www.mapillary.com/dataset/vistas?pKey=2ix3yvnjy9fwqdzwum3t9g&lat=20&lng=0&z=1.5).
 
 Following [RobustNet](https://github.com/shachoi/RobustNet), we adopt Class uniform sampling proposed in [this paper](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zhu_Improving_Semantic_Segmentation_via_Video_Propagation_and_Label_Relaxation_CVPR_2019_paper.pdf) to handle class imbalance problems. 
