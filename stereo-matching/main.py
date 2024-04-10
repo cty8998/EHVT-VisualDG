@@ -3,7 +3,7 @@ from __future__ import print_function
 import argparse
 import os
 os.environ['CUDA_DEVICE_ORDER'] = "PCI_BUS_ID"
-os.environ['CUDA_VISIBLE_DEVICES'] = '4,6'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 import time
 
 import numpy as np
@@ -43,6 +43,10 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
+parser.add_argument('--logfile', type=str, default='/home/changty/github_sm_ehvt/psmnet_ehvt/save_ckpt/log-psm-ehvt.txt',
+                    help='the domain generalization evaluation results on four realistic datasets')
+parser.add_argument('--res18', type=str, default='/home/changty/github_sm_ehvt/psmnet_ehvt/resnet18-5c106cde.pth',
+                    help='the pretrained model of resnet18')
 
 ##############################Ours EIL###############################
 parser.add_argument('--envs_split_type', default='env_infer', choices=['env_infer', 'random'],
@@ -84,17 +88,12 @@ parser.add_argument('--num_patch_column', type=int, default=4,
 
 args = parser.parse_args()
 
-# os.environ['CUDA_DEVICE_ORDER'] = "PCI_BUS_ID"
-# os.environ['CUDA_VISIBLE_DEVICES'] = '4,6'
-
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-
-log_file = os.path.join(args.savemodel, 'log-psm-ehvt.txt')
 
 ###########experiment_type###########
 print(args.savemodel)
@@ -340,12 +339,12 @@ def main():
         state_dict = torch.load(savefilename)
         model_test.load_state_dict(state_dict['state_dict'], strict=False)
         
-        with open(log_file, 'a') as f:
+        with open(args.log_file, 'a') as f:
             print('this is the dg test result of epoch {}\n'.format(epoch), file=f)
-        dg_test(model_test, log_file, test_left_img_mb, test_right_img_mb, train_gt_mb, test_name='md')
-        dg_test(model_test, log_file, test_left_img_eth, test_right_img_eth, all_disp_eth, test_name='eth', all_mask=all_mask_eth)
-        dg_test(model_test, log_file, test_left_img_k12, test_right_img_k12, test_ldisp_k12, test_name='kitti15')
-        dg_test(model_test, log_file, test_left_img_k15, test_right_img_k15, test_ldisp_k15, test_name='kitti12')
+        dg_test(model_test, args.log_file, test_left_img_mb, test_right_img_mb, train_gt_mb, test_name='md')
+        dg_test(model_test, args.log_file, test_left_img_eth, test_right_img_eth, all_disp_eth, test_name='eth', all_mask=all_mask_eth)
+        dg_test(model_test, args.log_file, test_left_img_k12, test_right_img_k12, test_ldisp_k12, test_name='kitti15')
+        dg_test(model_test, args.log_file, test_left_img_k15, test_right_img_k15, test_ldisp_k15, test_name='kitti12')
 
     print('full training time = %.2f HR' %((time.time() - start_full_time)/3600))
 
