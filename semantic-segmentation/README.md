@@ -1,91 +1,108 @@
-## SHADE on Domain Generalized Semantic Segmentation
+## EHVT on Domain Generalized Semantic Segmentation
 
-This is the implementation of SHADE on domain generalized semantic segmentation with Transformer backbone (MiT-B5). The implementation with ConvNets backbone (ResNet) is available in the [conference version](https://github.com/HeliosZhao/SHADE).
+This is the implementation of EHVT on domain generalized semantic segmentation. 
 
 ### Setup Environment
-We use python 3.8.5, and pytorch 1.7.1 with cuda 11.0. 
+We use python 3.8.18, and pytorch 1.12.0 with cuda 11.3. 
 ```shell
-conda create -n dgformer python=3.8
-conda activate dgformer
-pip install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
-pip install mmcv-full==1.3.7  # requires the other packages to be installed first
-
-```
-All experiments were executed on a NVIDIA RTX 3090 GPU.
-
-### Setup Datasets
-
-**Data Download:** We trained our model with the source domain GTAV and evaluated the model on Cityscapes, BDD-100K, and Mapillary Vistas. Please follow the [conference version](https://github.com/HeliosZhao/SHADE) to download data.
-
-
-**Data Preprocessing:** Please run the following scripts to convert the label IDs to the
-train IDs and to generate the class index for RCS:
-
-```shell
-python tools/convert_datasets/gta.py data/GTAV --nproc 8
-python tools/convert_datasets/cityscapes.py data/CityScapes --nproc 8
-python tools/convert_datasets/mapillary.py data/mapillary/validation --nproc 8
+conda create -n ehvt-seg python=3.8
+conda activate ehvt-seg
+conda install pytorch==1.12.0 torchvision==0.13.0 torchaudio==0.12.0 cudatoolkit=11.3 -c pytorch
+conda install scipy
+conda install tqdm
+conda install scikit-image
+pip install tensorboardX
+pip install thop
+pip install kmeans1d
+imageio_download_bin freeimage
 ```
 
-### Training
+### Data Preparation
+We trained our model with the source domain [GTAV](https://download.visinf.tu-darmstadt.de/data/from_games/). Then we evaluated the model on [Cityscapes](https://www.cityscapes-dataset.com/), [BDD-100K](https://bdd-data.berkeley.edu/), and [Mapillary Vistas](https://www.mapillary.com/dataset/vistas?pKey=2ix3yvnjy9fwqdzwum3t9g&lat=20&lng=0&z=1.5).
 
-First, please download the MiT weights from [[Google Drive](https://drive.google.com/uc?id=1d7I50jVjtCddnhpf-lqj8-f13UyCzoW1)].
+Following [RobustNet](https://github.com/shachoi/RobustNet), we adopt Class uniform sampling proposed in [this paper](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zhu_Improving_Semantic_Segmentation_via_Video_Propagation_and_Label_Relaxation_CVPR_2019_paper.pdf) to handle class imbalance problems. 
 
-To train the source only model:
-
-```shell
-python run_experiments.py --config configs/dgformer/gta2cs_source.py
-```
-
-To train our model:
-
-```shell
-python run_experiments.py --config configs/dgformer/gta2cs_source_rsc_shade.py
-```
-
-
-### Testing
-
-We use the final model to evaluate the performance on the target datasets: CityScapes, BDD100K and Mapillary.
-
-```shell
-sh scripts/test_dg.sh ${work_dir} cityscapes ## test CityScapes
-sh scripts/test_dg.sh ${work_dir} bdd ## test bdd100k
-sh scripts/test_dg.sh ${work_dir} mapillary ## test mapillary
-```
-
-
-### Framework Structure
-
-This project is based on [mmsegmentation version 0.16.0](https://github.com/open-mmlab/mmsegmentation/tree/v0.16.0).
-For more information about the framework structure and the config system,
-please refer to the [mmsegmentation documentation](https://mmsegmentation.readthedocs.io/en/latest/index.html)
-and the [mmcv documentation](https://mmcv.readthedocs.ihttps://arxiv.org/abs/2007.08702o/en/v1.3.7/index.html).
-
-
-### Citation
+1. We used [GTAV_Split](https://download.visinf.tu-darmstadt.de/data/from_games/code/read_mapping.zip) to split GTAV dataset into train/val/test set.
 
 ```
-@inproceedings{zhao2022shade,
-  title={Style-Hallucinated Dual Consistency Learning for Domain Generalized Semantic Segmentation},
-  author={Zhao, Yuyang and Zhong, Zhun and Zhao, Na and Sebe, Nicu and Lee, Gim Hee},
-  booktitle={Proceedings of the European Conference on Computer Vision (ECCV)},
-  year={2022}}
-
-@article{zhao2022shadevdg,
-  title={Style-Hallucinated Dual Consistency Learning: A Unified Framework for Visual Domain Generalization},
-  author={Zhao, Yuyang and Zhong, Zhun and Zhao, Na and Sebe, Nicu and Lee, Gim Hee},
-  journal={arXiv preprint arXiv:2212.09068},
-  year={2022}}
+gtav
+ └ images
+ └ labels
 ```
 
+2. For [Cityscapes](https://www.cityscapes-dataset.com/), download "leftImg8bit_trainvaltest.zip" and "gtFine_trainvaltest.zip". Unzip the files and make the directory structures as follows.
+```
+cityscapes
+  └ leftImg8bit
+    └ train
+    └ val
+    └ test
+  └ gtFine
+    └ train
+    └ val
+    └ test
+```
+3. For [BDD-100K](https://bdd-data.berkeley.edu/), download "10K Images" and "Segmentation". Unzip the files and make the directory structures as follows.
+```
+bdd100k
+ └ images/10k
+   └ train
+   └ val
+   └ test
+ └ labels/semseg/masks
+   └ train
+   └ val
+```
+4. For [Mapillary Vistas](https://www.mapillary.com/dataset/vistas?pKey=2ix3yvnjy9fwqdzwum3t9g&lat=20&lng=0&z=1.5), download the full dataset. Unzip the files and make the directory structures as follows.
+```
+mapillary
+ └ training
+   └ images
+   └ labels
+ └ validation
+   └ images
+   └ labels
+ └ test
+   └ images
+   └ labels
+```
+
+### Run
+You should modify the path in **"<path_to_EHVT>/config.py"** according to your dataset path.
+```
+#Cityscapes Dir Location
+__C.DATASET.CITYSCAPES_DIR = <YOUR_CITYSCAPES_PATH>
+#Mapillary Dataset Dir Location
+__C.DATASET.MAPILLARY_DIR = <YOUR_MAPILLARY_PATH>
+#GTAV Dataset Dir Location
+__C.DATASET.GTAV_DIR = <YOUR_GTAV_PATH>
+#BDD-100K Dataset Dir Location
+__C.DATASET.BDD_DIR = <YOUR_BDD_PATH>
+```
+#### Environment Inference and Environment Invariant Learning
+The code of Environment Inference is mainly in file EIL.py. The environment inference in EIL is conducted every 5 epochs to acquire the environment label for each training sample.
+The Environment Invariant Learning is integrated into the training process of the EHVT network.
+
+#### Training
+You can train EHVT with following commands.
+```
+bash scripts/res50_deepv3_gtav_ehvt.sh # Train: GTAV, Test: Cityscapes, BDD100K, Mapillary / ResNet50 + DeepV3 + EHVT
+bash scripts/res50_ibnnet_gtav_ehvt.sh # Train: GTAV, Test: Cityscapes, BDD100K, Mapillary / ResNet50 + IBNNet + EHVT
+bash scripts/res50_robust_gtav_ehvt.sh # Train: GTAV, Test: Cityscapes, BDD100K, Mapillary / ResNet50 + RobustNet + EHVT
+```
+
+#### Evaluation:
+In the training stage, our code will automatically test the performance of four realistic datasets (Cityscapes, BDD100K, Mapillary) after each epoch.
+
+#### Pretrained ResNet18 Model:
+[Google Drive](https://drive.google.com/drive/folders/14puLJ5ccffh8Bc1P2hhPoK73gSC1TImf?usp=sharing)
 
 ### Acknowledgements
 
 This project is based on the following open-source projects. We thank their
 authors for making the source code publically available.
 
-* [MMSegmentation](https://github.com/open-mmlab/mmsegmentation)
-* [DAFormer](https://github.com/lhoyer/DAFormer)
+* [RobustNet](https://github.com/shachoi/RobustNet)
+* [IRMBed](https://github.com/IRMBed/IRMBed)
   
 
