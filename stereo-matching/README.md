@@ -18,7 +18,7 @@
 ### Run
 
 #### Environment Inference and Environment Invariant Learning
-The code of Environment Inference is mainly in file EIL.py. The environment inference in EIL is conducted every 5 epochs to acquire the environment label for each training sample.
+The code of Environment Inference is mainly in file EIL.py. The environment inference in EIL is conducted every 5 epochs to acquire the environmental label for each training sample.
 The Environment Invariant Learning is integrated into the training process of the EHVT network.
 
 #### Training:
