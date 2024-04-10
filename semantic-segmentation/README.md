@@ -80,7 +80,7 @@ __C.DATASET.GTAV_DIR = <YOUR_GTAV_PATH>
 __C.DATASET.BDD_DIR = <YOUR_BDD_PATH>
 ```
 #### Environment Inference and Environment Invariant Learning
-The code of Environment Inference is mainly in file EIL.py. The environment inference in EIL is conducted every 5 epochs to acquire the environment label for each training sample.
+The code of Environment Inference is mainly in file EIL.py. The environment inference in EIL is conducted every 5 epochs to acquire the environmental label for each training sample.
 The Environment Invariant Learning is integrated into the training process of the EHVT network.
 
 #### Training
@@ -92,7 +92,7 @@ bash scripts/res50_robust_gtav_ehvt.sh # Train: GTAV, Test: Cityscapes, BDD100K,
 ```
 
 #### Evaluation:
-In the training stage, our code will automatically test the performance of four realistic datasets (Cityscapes, BDD100K, Mapillary) after each epoch.
+In the training stage, our code will automatically test the performance of there realistic datasets (Cityscapes, BDD100K, Mapillary) after each epoch.
 
 #### Pretrained ResNet18 Model:
 [Google Drive](https://drive.google.com/drive/folders/14puLJ5ccffh8Bc1P2hhPoK73gSC1TImf?usp=sharing)
