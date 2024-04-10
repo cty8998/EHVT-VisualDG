@@ -97,6 +97,19 @@ In the training stage, our code will automatically test the performance of four 
 #### Pretrained ResNet18 Model:
 [Google Drive](https://drive.google.com/drive/folders/14puLJ5ccffh8Bc1P2hhPoK73gSC1TImf?usp=sharing)
 
+### Citation
+
+If you find our work useful in your research, please consider citing our paper:
+
+```bibtex
+@inproceedings{chang2023domain,
+  title={Domain Generalized Stereo Matching via Hierarchical Visual Transformation},
+  author={Chang, Tianyu and Yang, Xun and Zhang, Tianzhu and Wang, Meng},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={9559--9568},
+  year={2023}
+}
+
 ### Acknowledgements
 
 This project is based on the following open-source projects. We thank their
