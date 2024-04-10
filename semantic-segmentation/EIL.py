@@ -283,6 +283,7 @@ def get_train_dataloader_envs(TrainImgLoader, model, criterion, model_ei, optimi
     elif args. envs_split_type == 'random':
         envs_index_list = random_envsnum_getenvLoader(epoch, num_sample, envs_num=args.envs_num)
 
+    ### For stage 3 (epoch >= 25), if batchsize=8, the model will be cuda out of memory. So we set the bathsize=7 after epoch 25.
     if epoch >= 25:
         args.bs_mult = 7
         args.train_batch_size = 7
