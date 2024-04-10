@@ -4,5 +4,19 @@
 
 :bell: This is the extension of our **[CVPR2023 Paper: Domain Generalized Stereo Matching via Hierarchical Visual Transformation (HVT)](https://arxiv.org/pdf/2204.02548.pdf)**. This paper enhances the HVT network by introducing the environment-invariant learning (EIL) and applies our EHVT method to visual matching and recognition tasks, i.e. stereo matching, pedestrian retrieval, image classification and semantic segmentation.
 
-### Usage
+## Usage
 In our paper, we have demonstrated the effectiveness of EHVT on four tasks: stereo matching, pedestrian retrieval, image classification and semantic segmentation. The source code for reproducing all experiments can be found in `EHVT-VisualDG/stereo-matching`, `EHVT-VisualDG/pedestrian-retrieval`, `EHVT-VisualDG/image-classification` and `EHVT-VisualDG/semantic-segmentation`, respectively.
+
+## Citation
+
+If you find our work useful in your research, please consider citing our paper:
+
+```bibtex
+@inproceedings{chang2023domain,
+  title={Domain Generalized Stereo Matching via Hierarchical Visual Transformation},
+  author={Chang, Tianyu and Yang, Xun and Zhang, Tianzhu and Wang, Meng},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={9559--9568},
+  year={2023}
+}
+```
