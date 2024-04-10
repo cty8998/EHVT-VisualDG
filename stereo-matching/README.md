@@ -1,6 +1,6 @@
-### EHVT on Domain Generalized Stereo Matching 
+## EHVT on Domain Generalized Stereo Matching 
 
-#### Dependencies:
+### Dependencies:
 - Python 3.9
 - PyTorch 1.13.0
 - torchvision 0.14.0
@@ -8,12 +8,14 @@
 - opencv-python 
 - pillow 
 
-#### Datasets:
+### Datasets:
 - [SceneFlow](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
 - [KITTI stereo 2015](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo)
 - [KITTI stereo 2012](http://www.cvlibs.net/datasets/kitti/eval_stereo_flow.php?benchmark=stereo)
 - [Middlebury v3](https://vision.middlebury.edu/stereo/submit3/)
 - [ETH3D](https://www.eth3d.net/datasets#low-res-two-view)
+
+### Run
 
 #### Environment Inference and Environment Invariant Learning
 The code of Environment Inference is mainly in file EIL.py. The environment inference in EIL is conducted every 5 epochs to acquire the environment label for each training sample.
